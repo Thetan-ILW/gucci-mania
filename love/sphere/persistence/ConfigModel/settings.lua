@@ -116,7 +116,7 @@ local settings = {
 				borderless = false,
 				centered = true,
 				display = 1,
-				fullscreen = true,
+				fullscreen = false,
 				fullscreentype = "exclusive",
 				highdpi = false,
 				msaa = 0,
@@ -125,12 +125,12 @@ local settings = {
 				vsync = 0
 			},
 			fullscreen = {
-				height = 720,
-				width = 1280
+				height = 768,
+				width = 1368
 			},
 			window = {
-				height = 720,
-				width = 1280
+				height = 768,
+				width = 1368
 			}
 		},
 		perspective = {

@@ -40,10 +40,13 @@ local function replaceWithGucci(file)
 	os.execute(("sed -i 's/soundsphere/gucci!mania/g' %s"):format(file))
 end
 
+local function createArchive(dir, destination)
+	os.execute(("cd %s;zip -r %s ."):format(dir, ("%s/%s"):format(script_path, destination)))
+end
+
 local function help()
 	print("Build script for gucci!mania\nAvailable options:")
 	print("	-b build	Build the entire project and pack everything into one game.love archive")
-	print(" -tb test-build	Build the project, but without packing files into game.love")
 	print("	-r run		Run the test build")
 	print("	-d download	Download base soundsphere with all required plugins.")
 	print("	-u update	Update plugins")
@@ -56,6 +59,10 @@ local plugins = {
 	{ name = "MinaCalc", link = "https://github.com/Thetan-ILW/MinaCalc-soundsphere" },
 	{ name = "ManipFactor", link = "https://github.com/Thetan-ILW/ManipFactorEtterna-soundsphere" }
 }
+
+local function patchPlugins()
+	--copyDir("assets", "pkg/osuUI/osu_ui")
+end
 
 ---@return boolean error
 ---@nodiscard
@@ -90,6 +97,7 @@ local function download()
 			os.execute(("git clone %s pkg/%s"):format(v.link, v.name))
 		end
 	end
+	patchPlugins()
 
 	return false
 end
@@ -101,6 +109,7 @@ local function updatePlugins()
 			os.execute(("cd pkg/%s;git fetch;git pull"):format(v.name))
 		end
 	end
+	patchPlugins()
 end
 
 local function build() -----------------------------------------------------------------
@@ -122,43 +131,25 @@ local function build() ---------------------------------------------------------
 	copyDir("love/*", "temp")
 	replaceWithGucci("temp/sphere/app/WindowModel.lua")
 	replaceWithGucci("temp/sphere/persistence/CacheModel/LocationManager.lua")
-	os.execute("sed -i 's/594443609668059149/1294208452503273483/g temp/sphere/app/DiscordModel.lua'")
-	os.execute("cd temp && zip -r ../build/game.love .")
 
 	mkdir("build/userdata")
 	mkdir("build/userdata/pkg")
-	copyDir("pkg/*", "build/userdata/pkg")
-	copyDir("gucci", "build/userdata/pkg")
-	copyDir("assets", "build/userdata/pkg/osuUI/osu_ui")
-	replaceWithGucci("build/userdata/pkg/osuUI/osu_ui/localization/en.lua")
-	replaceWithGucci("build/userdata/pkg/osuUI/osu_ui/localization/ru.lua")
+	createArchive("pkg/osuUI", "build/userdata/pkg/osuUI.zip")
+	createArchive("pkg/MinaCalc", "build/userdata/pkg/MinaCalc.zip")
+	createArchive("pkg/ManipFactor", "build/userdata/pkg/ManipFactor.zip")
+	createArchive("pkg/PlayerProfile", "build/userdata/pkg/PlayerProfile.zip")
+	createArchive("pkg/gucci", "temp/gucci_packages/gucci.zip")
+	os.execute("sed -i 's/594443609668059149/1294208452503273483/g' temp/sphere/app/DiscordModel.lua")
+	os.execute("cd temp && zip -r ../build/game.love .")
+	os.execute("rm -rf build/userdata/pkg/osuUI/osu_ui/assets/sourcefiles")
+
+	copyFile("gucci!mania.exe", "build")
+	copyFile("soundsphere/game-appimage", "build")
+	copyFile("soundsphere/game-linux", "build")
+	copyFile("soundsphere/game-win64.bat", "build")
 
 	print("INFO: Build created")
 end -----------------------------------------------------------------------------------
-
-local function buildTest()
-	if dirExists("test_build") then
-		os.execute("rm -rf test_build")
-	end
-
-	mkdir("test_build")
-	copyDir("soundsphere/bin", "test_build/bin")
-	copyFile("pkg/MinaCalc/minacalc/bin/linux64/libminacalc.so", "test_build/bin/linux64/libminacalc.so")
-	copyFile("pkg/MinaCalc/minacalc/bin/win64/libminacalc.dll", "test_build/bin/win64/libminacalc.dll")
-	copyDir("soundsphere/resources", "test_build/resources")
-
-	mkdir("test_build/userdata")
-	copyDir("soundsphere/userdata/hitsounds", "test_build/userdata/hitsounds")
-	copyDir("pkg", "test_build/userdata/pkg")
-	copyDir("assets", "test_build/userdata/pkg/osuUI/osu_ui")
-	copyDir("userdata", "test_build")
-
-	copyFile("soundsphere/game.love", "test_build/game.love")
-	copyFile("soundsphere/conf.lua", "test_build/conf.lua")
-	copyFile("soundsphere/game-linux", "test_build/game-linux")
-	copyFile("soundsphere/game-win64.bat", "test_build/game-win64.bat")
-	print("INFO: Test build created")
-end
 
 local function run()
 	os.execute("export SDL_VIDEODRIVER=wayland;sh test_build/game-linux")
@@ -182,8 +173,6 @@ local function processArguments()
 			updatePlugins()
 		elseif v == "-b" or v == "build" then
 			build()
-		elseif v == "-tb" or v == "test-build" then
-			buildTest()
 		elseif v == "-r" or v == "run" then
 			run()
 		end
