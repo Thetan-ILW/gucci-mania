@@ -138,7 +138,7 @@ local function build() ---------------------------------------------------------
 	createArchive("pkg/MinaCalc", "build/userdata/pkg/MinaCalc.zip")
 	createArchive("pkg/ManipFactor", "build/userdata/pkg/ManipFactor.zip")
 	createArchive("pkg/PlayerProfile", "build/userdata/pkg/PlayerProfile.zip")
-	createArchive("pkg/gucci", "temp/gucci_packages/gucci.zip")
+	createArchive("pkg/gucci", "build/userdata/pkg/gucci.zip")
 	os.execute("sed -i 's/594443609668059149/1294208452503273483/g' temp/sphere/app/DiscordModel.lua")
 	os.execute("cd temp && zip -r ../build/game.love .")
 	os.execute("rm -rf build/userdata/pkg/osuUI/osu_ui/assets/sourcefiles")

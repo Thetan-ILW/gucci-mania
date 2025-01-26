@@ -125,12 +125,12 @@ local settings = {
 				vsync = 0
 			},
 			fullscreen = {
-				height = 768,
-				width = 1368
+				height = 720,
+				width = 1280
 			},
 			window = {
-				height = 768,
-				width = 1368
+				height = 720,
+				width = 1280
 			}
 		},
 		perspective = {
@@ -144,7 +144,7 @@ local settings = {
 			z = -0.71407400337105997
 		},
 		vsyncOnSelect = true,
-		userInterface = "osu_ui",
+		userInterface = "Default",
 	},
 	input = {
 		pause = "escape",
@@ -177,14 +177,30 @@ local settings = {
 		showTasks = false,
 		showDebugMenu = false,
 		discordPresence = true,
+		generateGifResult = false,
 	},
 	select = {
 		collapse = true,
-		chartdiffs_list = false,
+		chartviews_table = "chartviews",  ---@type "chartviews"|"chartdiffviews"|"chartplayviews"
 		diff_column = "enps_diff",
 		locations_in_collections = false,
 		chart_preview = true,
 	}
 }
+
+settings.graphics.userInterface = "osu_ui"
+settings.audio.volume.master = 0.5
+
+local gameplay = settings.gameplay
+gameplay.speed = 2.041666666666667
+gameplay.speedType = "osu"
+
+local graphics = settings.graphics
+graphics.dim.gameplay = 1
+graphics.dim.select = 0.35
+graphics.dim.result = 0.35
+
+settings.select.chart_preview = false
+settings.select.diff_column = "osu_diff"
 
 return settings
