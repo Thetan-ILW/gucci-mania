@@ -4,8 +4,6 @@ local env = require("env")
 local json = require("json")
 local files = require("src.files")
 
----@alias FileMetadata { path: string, url: string, git?: { branch: string, directory: string } }
-
 ---@class gucci.Branch
 ---@operator call: gucci.Branch
 local Branch = class()
@@ -13,23 +11,11 @@ local Branch = class()
 Branch.buildDirectory = "build"
 
 ---@param name string
----@param filemetas IFileMeta[]
+---@param filemetas FileMeta[]
 function Branch:new(name, filemetas)
 	self.fileMetas = filemetas
 	self.path = ("updates/%s"):format(name)
 	self.fileListPath = ("updates/%s/file_list.json"):format(name)
-end
-
----@param filemeta GitPackageFileMeta
----@return boolean success
----@return string? error 
-function Branch:switchGitBranch(filemeta)
-	local process, err = io.popen(("cd %s;git checkout %s"):format(filemeta.pkg.path, filemeta.branch), "r")
-	if not process then
-		return false, err
-	end
-	print(process:read("*l"))
-	return true
 end
 
 ---@return boolean success
@@ -44,19 +30,7 @@ function Branch:build()
 		if not exists then
 			return false, ("ERROR: Missing plugin: %s"):format(err_filename)
 		end
-
-		if filemeta.pkg then
-			---@cast filemeta GitPackageFileMeta
-			self:switchGitBranch(filemeta)
-		end
-
-		local success, err = filemeta:validate()
-		if not success then
-			return false, err
-		end
 	end
-
-	print("INFO: Files validated")
 
 	if love.filesystem.getInfo("build") then
 		os.execute("rm -rf build")
@@ -64,10 +38,9 @@ function Branch:build()
 
 	files.mkdir("build")
 	files.copyDir("soundsphere/bin", "build")
+	os.execute("unzip -p files/userdata/pkg/MinaCalc.zip MinaCalc-soundsphere-main/minacalc/bin/win64/libminacalc.dll >build/bin/win64/libminacalc.dll")
+	os.execute("unzip -p files/userdata/pkg/MinaCalc.zip MinaCalc-soundsphere-main/minacalc/bin/linux64/libminacalc.so >build/bin/linux64/libminacalc.so")
 
-	local git_dir = env.gitDirectory
-	files.copyFile(git_dir .. "/MinaCalc/minacalc/bin/linux64/libminacalc.so", "build/bin/linux64/libminacalc.so")
-	files.copyFile(git_dir .. "/MinaCalc/minacalc/bin/win64/libminacalc.dll", "build/bin/win64/libminacalc.dll")
 	files.copyFile("soundsphere/conf.lua", "build/conf.lua")
 	files.copyFile("gucci!mania.exe", "build")
 	files.copyFile("soundsphere/game-appimage", "build")
@@ -78,15 +51,12 @@ function Branch:build()
 
 	files.mkdir("build/userdata")
 	files.mkdir("build/userdata/pkg")
+	files.copyDir(env.filesDirectory .. "/userdata/pkg", "build/userdata")
 
-	for _, filemeta in ipairs(self.fileMetas) do
-		if filemeta.pkg then
-			---@cast filemeta GitPackageFileMeta
-			files.createArchive(filemeta.pkg.path, ("build/userdata/pkg/%s.zip"):format(filemeta.pkg.id))
-		end
+	local success, err = self:createFileList()
+	if not success then
+		return false, err
 	end
-
-	self:createFileList()
 
 	return true
 end
@@ -103,21 +73,11 @@ function Branch:createFileList()
 	local file_list = {}
 
 	for _, filemeta in ipairs(self.fileMetas) do
-		if filemeta.pkg then
-			local filepath = "userdata/pkg/" .. filemeta:getFileName()
-			table.insert(file_list, {
-				path = filepath,
-				hash = getHash("build/" .. filepath),
-				url = filemeta.url
-			})
-		else
-			local filepath = filemeta:getFileName()
-			table.insert(file_list, {
-				path = filepath,
-				hash = getHash("build/" .. filepath),
-				url = filemeta.url
-			})
-		end
+		table.insert(file_list, {
+			path = filemeta.filepath,
+			hash = getHash("build/" .. filemeta.filepath),
+			url = filemeta.url
+		})
 	end
 
 	local file, err = io.open(("%s/file_list.json"):format(self.path), "w")

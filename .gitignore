@@ -1,9 +1,8 @@
 soundsphere.zip
 soundsphere/*
 gamelove_patched/
-git_pkg/
-git_pkg_patched/
-git_pkg_patched/*
+pkgs/
+pkgs/*
 files/
 files/*
 build/

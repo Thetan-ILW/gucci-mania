@@ -1,23 +1,18 @@
-local IFileMeta = require("src.IFileMeta")
+local class = require("class")
 local env = require("env")
 
----@class FileMeta : IFileMeta
----@operator call: IFileMeta
-local FileMeta = IFileMeta + {}
+---@class FileMeta
+---@operator call: FileMeta
+local FileMeta = class()
 
 ---@param filepath string
 ---@param url string
-function FileMeta:new(filepath, url)
+---@param is_package boolean?
+function FileMeta:new(filepath, url, is_package)
 	self.filepath = filepath
 	self.url = url
+	self.isPackage = is_package
 	assert(self.filepath and self.url)
-end
-
----@return boolean success
----@return string? error
-function FileMeta:validate()
-	print(("Skipping validation: %s"):format(self.filepath))
-	return true
 end
 
 ---@return boolean exists

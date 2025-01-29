@@ -1,5 +1,6 @@
 local class = require("class")
 local files = require("src.files")
+local env = require("env")
 
 ---@class Soundsphere
 ---@operator call: Soundsphere
@@ -7,25 +8,7 @@ local Soundsphere = class()
 
 ---@return boolean success
 ---@return string? error
-function Soundsphere:download()
-	if love.filesystem.getInfo("soundsphere.zip") then
-		os.execute("rm soundsphere.zip")
-	end
-
-	print("INFO: Downloading soundsphere")
-	local process, err = io.popen("curl --output soundsphere.zip https://dl.soundsphere.xyz/soundsphere.zip")
-
-	if not process then
-		return false, err
-	end
-
-	print(process:read("*l"))
-	process:close()
-
-	if not love.filesystem.getInfo("soundsphere.zip") then
-		return false, "ERROR: Failed to download soundsphere."
-	end
-
+function Soundsphere:unzip()
 	if love.filesystem.getInfo("soundsphere") then
 		print("INFO: Deleting previous soundsphere files")
 		os.execute("rm -rf soundsphere")
