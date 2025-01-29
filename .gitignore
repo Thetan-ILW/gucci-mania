@@ -1,7 +1,12 @@
 soundsphere.zip
 soundsphere/*
+gamelove_patched/
+git_pkg/
+git_pkg_patched/
+git_pkg_patched/*
+files/
+files/*
+build/
 build/*
-test_build/*
-pkg/*
 temp/*
 launcher/gucci_launcher/x64

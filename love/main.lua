@@ -160,10 +160,12 @@ delay.set_timer(love.timer.getTime)
 ---@type sphere.GameController?
 local game
 
+GUCCI_MANIA = true
 local thread = require("thread")
 thread.setInitFunc(function(packageLoader)
 	print("thread init")
 	require("preload")
+	GUCCI_MANIA = true
 	if not packageLoader then
 		return
 	end
