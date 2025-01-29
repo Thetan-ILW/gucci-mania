@@ -58,6 +58,7 @@ function Branch:build()
 		return false, err
 	end
 
+	files.copyFile(self.fileListPath, "build")
 	return true
 end
 

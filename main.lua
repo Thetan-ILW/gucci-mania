@@ -9,7 +9,8 @@ local env = require("env")
 local function help()
 	print("List of arguments:")
 	print(" -ds		Download soundsphere")
-	print(" -dp		Download/Redownload packages")
+	print(" -dps		Download/Redownload stable packages")
+	print(" -dpd		Download/Redownload develop packages")
 	print(" -love		Create patched game.love")
 	print(" -stable	Update stable branch file list")
 	print(" -develop	Update develop branch file list")
@@ -101,8 +102,10 @@ local function main()
 	if argument == "-ds" then
 		success, err = packages:downloadFile(soundsphere_filemeta, "soundsphere.zip")
 		success, err = soundsphere:unzip()
-	elseif argument == "-dp" then
+	elseif argument == "-dps" then
 		success, err = packages:downloadAll(stable_filemeta)
+	elseif argument == "-dpd" then
+		success, err = packages:downloadAll(develop_filemeta)
 	elseif argument == "-love" then
 		success, err = soundsphere:createGameLove()
 	elseif argument == "-stable" then
