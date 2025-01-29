@@ -80,6 +80,10 @@ end
 ---@param branch string
 ---@param force_check boolean?
 function Updater:checkForUpdates(branch, force_check)
+	if os.getenv("DEV") then
+		self:setStatus("Dev environment")
+		return false
+	end
 	if self.checkedThisSession and not force_check then
 		self:setStatus("Already checked")
 		return
