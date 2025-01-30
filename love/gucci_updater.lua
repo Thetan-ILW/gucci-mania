@@ -15,27 +15,23 @@ local Updater = class()
 Updater.fileListPath = "file_list.json"
 Updater.fileLists = {
 	stable = "https://raw.githubusercontent.com/Thetan-ILW/gucci-mania/refs/heads/main/updates/stable/file_list.json",
-	develop = "https://raw.githubusercontent.com/Thetan-ILW/gucci-mania/refs/heads/main/updates/develop/file_list.json",
 }
 
 Updater.branches = {
 	"stable",
-	"develop"
 }
 
----@param logs_channel osu.ui.ChatChannel
-function Updater:new(logs_channel)
+function Updater:new()
 	self.status = "Please wait..."
 	self.changes = {} ---@type gucci.Updater.FileMeta[]
 	self.remoteFileList = {} ---@type gucci.Updater.FileMeta[]
 	self.checkedThisSession = false
-	self.logsChannel = logs_channel
 end
 
+---@param text string?
 function Updater:setStatus(text)
 	print("UPDATER: " .. text)
 	self.status = text
-	self.logsChannel:addMessage({ username = "gucci!updater", messageColor = { 0.65, 0.65, 0.65, 1 },  text = text .. "\n" })
 end
 
 ---@param url string
@@ -50,7 +46,7 @@ function Updater:download(url)
 	local data, code, headers, status_line = fs_util.downloadAsync(url)
 	self.isDownloading = false
 
-	for i = 1, 5 do
+	for _ = 1, 5 do
 		if code == 302 then
 			self:setStatus("Redirected")
 			print(headers.location)
@@ -61,6 +57,7 @@ function Updater:download(url)
 	end
 
 	if not data then
+		status_line = status_line or "No internet connection"
 		return nil, status_line
 	end
 
@@ -74,17 +71,24 @@ function Updater:download(url)
 	end
 
 	filename = path_util.fix_illegal(filename)
-	return love.filesystem.newFileData(data, filename)
+
+	local file_data, err = love.filesystem.newFileData(data, filename)
+
+	if not file_data then
+		err = err or "File is nil"
+		return file_data, err
+	end
+
+	return file_data
 end
 
 ---@param branch string
----@param force_check boolean?
-function Updater:checkForUpdates(branch, force_check)
+function Updater:checkForUpdates(branch)
 	if os.getenv("DEV") then
 		self:setStatus("Dev environment")
 		return false
 	end
-	if self.checkedThisSession and not force_check then
+	if self.checkedThisSession then
 		self:setStatus("Already checked")
 		return
 	end
@@ -97,16 +101,17 @@ function Updater:checkForUpdates(branch, force_check)
 	self.checkedThisSession = true
 
 	self:setStatus(("Downloading file list: %s"):format(self.fileLists[branch]))
-	local remote_json, error = self:download(self.fileLists[branch])
+	local remote_json, err = self:download(self.fileLists[branch])
 
 	if not remote_json then
-		self:setStatus(error)
+		self:setStatus(err)
 		return
 	end
 
 	---@type boolean, table | string
 	local success, result = pcall(json.decode, remote_json:getString())
 	if not success then
+		---@cast result string
 		self:setStatus(result)
 		return
 	end
@@ -117,7 +122,6 @@ function Updater:checkForUpdates(branch, force_check)
 	self:setStatus("Got remote file list")
 
 	local local_json = love.filesystem.newFileData(self.fileListPath)
-	local err ---@type string?
 
 	if not local_json then
 		self:setStatus("No local file list, downloading everything")
@@ -132,6 +136,7 @@ function Updater:checkForUpdates(branch, force_check)
 	---@type boolean, table | string
 	success, result = pcall(json.decode, local_json:getString())
 	if not success then
+		---@cast result string
 		self:setStatus(result)
 		result = {}
 	end

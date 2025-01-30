@@ -183,8 +183,12 @@ end)
 thread.coro(function()
 	thread.stopThreads()
 
+	local Updater = require("gucci_updater")
+
 	local GameController = require("sphere.controllers.GameController")
 	game = GameController()
+	game.gucciUpdater = Updater()
+	game.gucciUpdater:checkForUpdates("stable")
 
 	game:load()
 
