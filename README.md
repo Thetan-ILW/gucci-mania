@@ -1,6 +1,8 @@
 ![gucci!welcome](assets/gucci-welcome@2x.png)
 # gucci!mania
-TODO
+gucci!mania is a vertical scroll rhythm game with a lot of new features to make people from other rhythm games feel comfortable without having to transition or get used to the new things.  
+
+The game does not focus on one individual key mode, instead, it has a lot of unique and useful features for every key mode. 
 
 # Download
 You can get the latest release on [this page](https://github.com/Thetan-ILW/gucci-mania/releases)  
@@ -12,7 +14,7 @@ There's no need to install the game, it's portable and the archive includes exec
 You can get help there, and there are channels for reporting bugs and suggesting new features.  
 
 # Features
-This game has a lot of features, I think we have all the features from **osu! ** and **Etterna**, I mean, EVERY FEATURE. 
+This game has a lot of features, I think we have all the features from **osu!** and **Etterna**, I mean, EVERY FEATURE. 
 
 :mag_right:  Most important features from osu!:
 1. You can use the **osu! user interface**. No need to get used to an unfamiliar UI. Use what you're already comfortable with.
@@ -52,3 +54,13 @@ This repository contains the auto updater for gucci!mania and all the scripts to
 ### [LocalPlayerProfile](https://github.com/Thetan-ILW/PlayerProfile-soundsphere) - osu! PP, MSD and Dans statisics.
 ### [ManipFactor](https://github.com/Thetan-ILW/ManipFactorEtterna-soundsphere) - Estimates the amount of manip
 
+# Showcase
+![Main menu](https://raw.githubusercontent.com/Thetan-ILW/screenshots/refs/heads/main/gucci/1.webp)
+
+![Song select](https://raw.githubusercontent.com/Thetan-ILW/screenshots/refs/heads/main/gucci/2.webp)
+
+![Result](https://raw.githubusercontent.com/Thetan-ILW/screenshots/refs/heads/main/gucci/3.webp)
+
+![Options](https://raw.githubusercontent.com/Thetan-ILW/screenshots/refs/heads/main/gucci/4.webp)
+
+[![YouTube](http://i.ytimg.com/vi/o8kfq8uXI9k/hqdefault.jpg)](https://www.youtube.com/watch?v=o8kfq8uXI9k)
