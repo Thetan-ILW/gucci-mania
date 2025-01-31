@@ -26,6 +26,19 @@ function Updater:new()
 	self.changes = {} ---@type gucci.Updater.FileMeta[]
 	self.remoteFileList = {} ---@type gucci.Updater.FileMeta[]
 	self.checkedThisSession = false
+	self.downloadingUpdate = false
+	self.restartRequired = false
+end
+
+---@param f (fun(state: "downloading" | "restart"))
+function Updater:notifyState(f)
+	if self.downloadingUpdate then
+		f("downloading")
+	end
+	if self.restartRequired then
+		f("restart")
+	end
+	self.notify = f
 end
 
 ---@param text string?
@@ -231,6 +244,11 @@ function Updater:downloadChanges()
 		return true
 	end
 
+	if self.notify then
+		self.notify("downloading")
+	end
+	self.downloadingUpdate = true
+
 	for _, filemeta in ipairs(self.changes) do
 		local success, err
 		if filemeta.deleted then
@@ -248,6 +266,11 @@ function Updater:downloadChanges()
 
 	local data = love.filesystem.newFileData(json.encode(self.remoteFileList), self.fileListPath)
 	love.filesystem.write(self.fileListPath, data)
+
+	if self.notify then
+		self.notify("restart")
+	end
+	self.restartRequired = true
 	self:setStatus("File list updated")
 	self:setStatus("Updates installed. Restart required.")
 

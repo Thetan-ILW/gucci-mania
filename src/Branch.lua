@@ -51,7 +51,10 @@ function Branch:build()
 
 	files.mkdir("build/userdata")
 	files.mkdir("build/userdata/pkg")
+	files.mkdir("build/userdata/backgrounds")
 	files.copyDir(env.filesDirectory .. "/userdata/pkg", "build/userdata")
+	files.copyDir("userdata/backgrounds", "build/userdata")
+	files.copyFile("userdata/avatar.png", "build/userdata")
 
 	local success, err = self:createFileList()
 	if not success then
