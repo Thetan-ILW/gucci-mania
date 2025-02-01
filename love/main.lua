@@ -194,6 +194,15 @@ thread.coro(function()
 
 	local loop = require("loop")
 	loop:init()
+
+	love.quit = function(...)
+		print("Quitting")
+		game.gucciUpdater:applyUpdate()
+		loop.quitting = true
+		return true
+	end
+
 	defaultLoop = loop:run()
 	loop:add(game)
+
 end)()

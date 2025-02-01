@@ -25,6 +25,8 @@ function Updater:new()
 	self.status = "Please wait..."
 	self.changes = {} ---@type gucci.Updater.FileMeta[]
 	self.remoteFileList = {} ---@type gucci.Updater.FileMeta[]
+	self.filesToRemove = {}
+	self.filesToInstall = {}
 	self.checkedThisSession = false
 	self.downloadingUpdate = false
 	self.restartRequired = false
@@ -212,7 +214,7 @@ end
 ---@param filemeta gucci.Updater.FileMeta
 ---@return boolean success
 ---@return string? error
-function Updater:downloadAndInstall(filemeta)
+function Updater:downloadUpdatedFile(filemeta)
 	local filedata, err = self:download(filemeta.url)
 	if not filedata then
 		return false, err
@@ -229,10 +231,7 @@ function Updater:downloadAndInstall(filemeta)
 		)
 	end
 
-	local success, err = love.filesystem.write(filemeta.path, filedata)
-	if not success then
-		return false, err
-	end
+	table.insert(self.filesToInstall, { path = filemeta.path, filedata = filedata })
 	return true
 end
 
@@ -253,10 +252,10 @@ function Updater:downloadChanges()
 		local success, err
 		if filemeta.deleted then
 			self:setStatus(("Removing %s"):format(filemeta.path))
-			success = love.filesystem.remove(filemeta.path)
+			table.insert(self.filesToRemove, filemeta.path)
 		else
 			self:setStatus(("Downloading %s"):format(filemeta.url))
-			success, err = self:downloadAndInstall(filemeta)
+			success, err = self:downloadUpdatedFile(filemeta)
 		end
 
 		if not success then
@@ -275,6 +274,28 @@ function Updater:downloadChanges()
 	self:setStatus("Updates installed. Restart required.")
 
 	return true
+end
+
+function Updater:applyUpdate()
+	if not self.restartRequired then
+		return
+	end
+
+	print("Applying a new update")
+	for i, v in ipairs(self.filesToInstall) do
+		print(("Replacing file: %s"):format(v.path))
+		local success, err = love.filesystem.write(v.path, v.filedata)
+		if not success then
+			print(("Failed to replace a file: %s"):format(v.path))
+			love.filesystem.remove("file_list.json")
+			return
+		end
+	end
+
+	for i, v in ipairs(self.filesToRemove) do
+		print(("Removing file: %s"):format(v))
+		love.filesystem.remove(v)
+	end
 end
 
 function Updater:getVersion()
