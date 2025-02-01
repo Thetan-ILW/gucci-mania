@@ -40,6 +40,7 @@ function Soundsphere:createGameLove()
 
 	files.replaceWithGucci("gamelove_patched/sphere/app/WindowModel.lua")
 	files.replaceWithGucci("gamelove_patched/sphere/persistence/CacheModel/LocationManager.lua")
+	os.execute("sed -i s/594443609668059149/1294208452503273483/g gamelove_patched/sphere/app/DiscordModel.lua")
 
 	files.createArchive("gamelove_patched", "files/game.love")
 
