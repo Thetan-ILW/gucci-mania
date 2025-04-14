@@ -188,7 +188,6 @@ thread.coro(function()
 	local GameController = require("sphere.controllers.GameController")
 	game = GameController()
 	game.gucciUpdater = Updater()
-	game.gucciUpdater:checkForUpdates("stable")
 
 	game:load()
 
@@ -205,4 +204,5 @@ thread.coro(function()
 	defaultLoop = loop:run()
 	loop:add(game)
 
+	game.gucciUpdater:checkForUpdates("stable")
 end)()
