@@ -38,8 +38,6 @@ function Branch:build()
 
 	files.mkdir("build")
 	files.copyDir("soundsphere/bin", "build")
-	os.execute("unzip -p files/userdata/pkg/MinaCalc.zip MinaCalc-soundsphere-main/minacalc/bin/win64/libminacalc.dll >build/bin/win64/libminacalc.dll")
-	os.execute("unzip -p files/userdata/pkg/MinaCalc.zip MinaCalc-soundsphere-main/minacalc/bin/linux64/libminacalc.so >build/bin/linux64/libminacalc.so")
 
 	files.copyFile("soundsphere/conf.lua", "build/conf.lua")
 	files.copyFile("gucci!mania.exe", "build")
@@ -54,7 +52,6 @@ function Branch:build()
 	files.mkdir("build/userdata/backgrounds")
 	files.copyDir(env.filesDirectory .. "/userdata/pkg", "build/userdata")
 	files.copyDir("userdata/backgrounds", "build/userdata")
-	files.copyFile("userdata/avatar.png", "build/userdata")
 
 	local success, err = self:createFileList()
 	if not success then
@@ -71,18 +68,29 @@ local function getHash(filepath)
 	return love.data.encode("string", "hex", love.data.hash("md5", filedata))
 end
 
+local function addFilesFromDirectory(path, file_list)
+	local build_path = "build/" .. path
+
+	local items = love.filesystem.getDirectoryItems(build_path)
+
+	for _, item in ipairs(items) do
+		local item_path = path .. item
+		local full_path = "build/" .. item_path
+		local info = love.filesystem.getInfo(full_path)
+
+		if info and info.type == "directory" then
+			addFilesFromDirectory(item_path .. "/", file_list)
+		elseif info and info.type == "file" then
+			table.insert(file_list, {item_path, getHash(full_path)})
+		end
+	end
+end
+
 ---@return boolean success
 ---@return string? error
 function Branch:createFileList()
 	local file_list = {}
-
-	for _, filemeta in ipairs(self.fileMetas) do
-		table.insert(file_list, {
-			path = filemeta.filepath,
-			hash = getHash("build/" .. filemeta.filepath),
-			url = filemeta.url
-		})
-	end
+	addFilesFromDirectory("", file_list)
 
 	local file, err = io.open(("%s/file_list.json"):format(self.path), "w")
 	if not file then

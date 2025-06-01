@@ -8,4 +8,7 @@ files/*
 build/
 build/*
 temp/*
+updates
+updates/*
 launcher/gucci_launcher/x64
+build.zip

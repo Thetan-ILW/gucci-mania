@@ -13,7 +13,6 @@ local function help()
 	print(" -dpd		Download/Redownload develop packages")
 	print(" -love		Create patched game.love")
 	print(" -stable	Update stable branch file list")
-	print(" -develop	Update develop branch file list")
 end
 
 local function main()
@@ -46,54 +45,11 @@ local function main()
 			"https://codeload.github.com/Thetan-ILW/osu_ui/zip/refs/heads/main",
 			true
 		),
-		FileMeta(
-			"userdata/pkg/MinaCalc.zip",
-			"https://codeload.github.com/Thetan-ILW/MinaCalc-soundsphere/zip/refs/heads/main",
-			true
-		),
-		FileMeta(
-			"userdata/pkg/PlayerProfile.zip",
-			"https://codeload.github.com/Thetan-ILW/PlayerProfile-soundsphere/zip/refs/heads/main",
-			true
-		),
-		FileMeta(
-			"userdata/pkg/ManipFactor.zip",
-			"https://codeload.github.com/Thetan-ILW/ManipFactorEtterna-soundsphere/zip/refs/heads/main",
-			true
-		)
-	}
-
-	local develop_filemeta = {
-		FileMeta(
-			"game.love",
-			"https://github.com/Thetan-ILW/gucci-mania/releases/latest/download/game.love"
-		),
-		FileMeta(
-			"userdata/pkg/osuUI.zip",
-			"https://codeload.github.com/Thetan-ILW/osu_ui/zip/refs/heads/develop",
-			true
-		),
-		FileMeta(
-			"userdata/pkg/MinaCalc.zip",
-			"https://codeload.github.com/Thetan-ILW/MinaCalc-soundsphere/zip/refs/heads/main",
-			true
-		),
-		FileMeta(
-			"userdata/pkg/PlayerProfile.zip",
-			"https://codeload.github.com/Thetan-ILW/PlayerProfile-soundsphere/zip/refs/heads/main",
-			true
-		),
-		FileMeta(
-			"userdata/pkg/ManipFactor.zip",
-			"https://codeload.github.com/Thetan-ILW/ManipFactorEtterna-soundsphere/zip/refs/heads/main",
-			true
-		)
 	}
 
 	local soundsphere = Soundsphere()
 	local packages = Packages()
 	local stable_branch = Branch("stable", stable_filemeta)
-	local develop_branch = Branch("develop", develop_filemeta)
 
 	local success = true
 	local err = "" ---@type string?
@@ -104,14 +60,10 @@ local function main()
 		success, err = soundsphere:unzip()
 	elseif argument == "-dps" then
 		success, err = packages:downloadAll(stable_filemeta)
-	elseif argument == "-dpd" then
-		success, err = packages:downloadAll(develop_filemeta)
 	elseif argument == "-love" then
 		success, err = soundsphere:createGameLove()
 	elseif argument == "-stable" then
 		success, err = stable_branch:build()
-	elseif argument == "-develop" then
-		success, err = develop_branch:build()
 	else
 		success = false
 		err = "Unkown argument"

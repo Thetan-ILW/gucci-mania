@@ -9,12 +9,12 @@ local json = require("json")
 ---@operator call: gucci.Updater
 local Updater = class()
 
----@alias gucci.Updater.FileMeta { path: string, hash: string, url: string, deleted: boolean }
+---@alias gucci.Updater.FileMeta { path: string, hash: string, deleted: boolean }
 ---@alias gucci.Updater.FileList gucci.Updater.FileMeta[]
-
+Updater.url = "https://64.188.96.80:8080/gucci/build/"
 Updater.fileListPath = "file_list.json"
 Updater.fileLists = {
-	stable = "https://raw.githubusercontent.com/Thetan-ILW/gucci-mania/refs/heads/main/updates/stable/file_list.json",
+	stable = "file_list.json",
 }
 
 Updater.branches = {
@@ -57,8 +57,10 @@ function Updater:download(url)
 		return nil, "Already downloading a file"
 	end
 
+	local file_url = self.url .. url
 	self.isDownloading = true
-	local data, code, headers, status_line = fs_util.downloadAsync(url)
+	self:setStatus(("Downloading %s"):format(file_url))
+	local data, code, headers, status_line = fs_util.downloadAsync(file_url)
 	self.isDownloading = false
 
 	for _ = 1, 5 do
@@ -72,11 +74,12 @@ function Updater:download(url)
 	end
 
 	if not data then
-		status_line = status_line or "No internet connection"
+		status_line = status_line or ("No internet connection / No file: "  .. url)
+		print(require("inspect")(headers))
 		return nil, status_line
 	end
 
-	local filename = url:match("^.+/(.-)$")
+	local filename = url:match("^.+/(.-)$") or url
 	for header, value in pairs(headers) do
 		header = header:lower()
 		if header == "content-disposition" then
@@ -85,6 +88,7 @@ function Updater:download(url)
 		end
 	end
 
+	print(("Filename: %s"):format(filename))
 	filename = path_util.fix_illegal(filename)
 
 	local file_data, err = love.filesystem.newFileData(data, filename)
@@ -131,9 +135,17 @@ function Updater:checkForUpdates(branch)
 		return
 	end
 
-	---@cast result gucci.Updater.FileList
-	local remote_file_list = result
-	self.remoteFileList = remote_file_list
+	self.remoteFileList = result -- save raw file list
+	---@cast result [string, string]
+	---@type gucci.Updater.FileList
+	local remote_file_list = {}
+	for _, v in ipairs(result) do
+		table.insert(remote_file_list, {
+			path = v[1],
+			hash = v[2],
+		})
+	end
+
 	self:setStatus("Got remote file list")
 
 	local local_json = love.filesystem.newFileData(self.fileListPath)
@@ -156,8 +168,15 @@ function Updater:checkForUpdates(branch)
 		result = {}
 	end
 
-	---@cast result gucci.Updater.FileList
-	local local_file_list = result
+	---@cast result [string, string]
+	---@type gucci.Updater.FileList
+	local local_file_list = {}
+	for _, v in ipairs(result) do
+		table.insert(local_file_list, {
+			path = v[1],
+			hash = v[2],
+		})
+	end
 	self:setStatus("Local file list ok")
 
 	self:findChanges(local_file_list, remote_file_list)
@@ -215,7 +234,7 @@ end
 ---@return boolean success
 ---@return string? error
 function Updater:downloadUpdatedFile(filemeta)
-	local filedata, err = self:download(filemeta.url)
+	local filedata, err = self:download(filemeta.path)
 	if not filedata then
 		return false, err
 	end
@@ -254,7 +273,6 @@ function Updater:downloadChanges()
 			self:setStatus(("Removing %s"):format(filemeta.path))
 			table.insert(self.filesToRemove, filemeta.path)
 		else
-			self:setStatus(("Downloading %s"):format(filemeta.url))
 			success, err = self:downloadUpdatedFile(filemeta)
 		end
 
@@ -301,7 +319,7 @@ end
 function Updater:getVersion()
 	local str = ""
 	for _, v in ipairs(self.remoteFileList) do
-		str = str .. v.hash
+		str = str .. v[2]
 	end
 	return love.data.encode("string", "hex", love.data.hash("md5", str)):sub(1, 6)
 end

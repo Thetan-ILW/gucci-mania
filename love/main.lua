@@ -1,3 +1,10 @@
+if arg[2] == "cli" then
+	table.remove(arg, 1)
+	table.remove(arg, 1)
+	dofile("sea/app/cli.lua")
+	return
+end
+
 require("hooks")
 
 require("mime")
@@ -14,6 +21,7 @@ local pkg = require("aqua.pkg")
 pkg.addc()
 pkg.addc("3rd-deps/lib")
 pkg.addc("bin/lib")
+pkg.addc("tree/lib/lua/5.1")
 pkg.add()
 pkg.add("3rd-deps/lua")
 pkg.add("aqua")
@@ -24,8 +32,6 @@ pkg.add("tree/share/lua/5.1")
 
 pkg.export_lua()
 pkg.export_love()
-
-require("aqua.string")
 
 local luacov_runner
 if arg[2] == "test" then
@@ -138,6 +144,7 @@ if arg[2] == "test" then
 		"3rd-deps",
 		"tree",
 		"userdata",
+		"storages",
 	}
 
 	local testing = Testing(tio)
@@ -165,7 +172,6 @@ local thread = require("thread")
 thread.setInitFunc(function(packageLoader)
 	print("thread init")
 	require("preload")
-	GUCCI_MANIA = true
 	if not packageLoader then
 		return
 	end
@@ -184,7 +190,6 @@ thread.coro(function()
 	thread.stopThreads()
 
 	local Updater = require("gucci_updater")
-
 	local GameController = require("sphere.controllers.GameController")
 	game = GameController()
 	game.gucciUpdater = Updater()
